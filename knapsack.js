@@ -6,7 +6,7 @@ function pageInitialization(){
     var totalWeight = 0;
     var totalValue = 0;
     //if not the first time opening page or not following a start-over click
-    if (!(localStorage.getItem('check') == 'yes')) {   
+    if (localStorage.getItem('check') != 'yes') {   
         //check if local storage should be restored for each DOM and make sure DOM's properties are correct
         if(localStorage.getItem('sack')) {
             $('#sack').html(localStorage.getItem('sack'));
@@ -22,12 +22,12 @@ function pageInitialization(){
 
         if(localStorage.getItem('weight')) {
             $('#weight').html(localStorage.getItem('weight'));
-            var totalWeight = parseInt(localStorage.getItem('weight'));
+            totalWeight = parseInt(localStorage.getItem('weight'));
         }
 
         if(localStorage.getItem('value')) {
             $('#value').html(localStorage.getItem('value'));
-            var totalValue= parseInt(localStorage.getItem('value'));
+            totalValue= parseInt(localStorage.getItem('value'));
         }
         
         if(localStorage.getItem('chart')) {
@@ -89,8 +89,8 @@ function canAddToTotal(weight, totalWeight) {
 function tastefulAlert() {
     //classic failure noise
     //from http://www.youtube.com/watch?v=iMpXAknykeg
-    var audio = new Audio('SadTrombone.mp3');
-    audio.play();
+    var errorSound = new Audio('SadTrombone.mp3');
+    errorSound.play();
     $('.alert').animate({opacity: 1}, 1500);
     $('.alert').animate({opacity: 0}, 1500);
 };
@@ -157,6 +157,7 @@ $(function() {
     var dataArray = pageInitialization();
     var totalWeight = dataArray[0];
     var totalValue = dataArray[1];  
+    updateLocalStorage();
     //burglar on creaky floor noise loops every duration of mp3 file (approx 95 seconds)
     //from https://www.youtube.com/watch?v=XBSsaK-r9nU
     var backgroundNoise = new Audio('FloorCreak.mp3');
