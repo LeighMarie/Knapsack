@@ -1,6 +1,7 @@
 .knapsack .header{
     text-align: center;  
     font-size: 17pt;
+    padding-bottom: 10px;
 }
 
 
@@ -10,7 +11,7 @@
 }
 
 #textOnly{
-    padding-bottom: 50px;
+    padding-bottom: 70px;
 }
 
 .knapsack .alert{
@@ -32,22 +33,22 @@
 }
 
 .knapsack .items{
-    height: 325px;
-    width: 325px;
+    height: 350px;
+    width: 350px;
     border-style: solid;
     border-width: 1px;
     border-color: black;
 }
 
 .knapsack .item{
+    margin: 5px;
     display: inline-block;
     font-size: 10pt;
     text-align: center;
 }
 
 .knapsack .item img{
-     width: 80px;
-     margin: 10px;
+     width: 100px;
 }
 
 
@@ -55,8 +56,19 @@
     text-align: center;
 }
 
+.knapsack .options{
+    text-align: center;  
+    padding-top: 30px;
+}
+
+#startOver{
+    margin-left: -435px;
+    font-size: 15pt;
+}
+
 .knapsack{
     width: 1500px; 
+    font-family:sans-serif;
 }
 
 

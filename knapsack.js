@@ -1,5 +1,65 @@
 /* Burglar's Dilemma: interactive lesson of Knapsack Problem */
 
+//checks to see how page should be initialized
+//determines if local storage should be used or not
+function pageInitialization(){  
+    var totalWeight = 0;
+    var totalValue = 0;
+    //if not the first time opening page or not following a start-over click
+    if (!(localStorage.getItem('check') == 'yes')) {   
+        //check if local storage should be restored for each DOM and make sure DOM's properties are correct
+        if(localStorage.getItem('sack')) {
+            $('#sack').html(localStorage.getItem('sack'));
+            $('.item').attr("style","");
+            $('.item').css("display", "inline-block");       
+        }
+
+        if(localStorage.getItem('house')) {
+            $('#house').html(localStorage.getItem('house'));
+            $('.item').attr("style","");
+            $('.item').css("display", "inline-block");   
+        }
+
+        if(localStorage.getItem('weight')) {
+            $('#weight').html(localStorage.getItem('weight'));
+            var totalWeight = parseInt(localStorage.getItem('weight'));
+        }
+
+        if(localStorage.getItem('value')) {
+            $('#value').html(localStorage.getItem('value'));
+            var totalValue= parseInt(localStorage.getItem('value'));
+        }
+        
+        if(localStorage.getItem('chart')) {
+            $('#chart').html(localStorage.getItem('chart'));
+        } 
+    }
+    //first time loading page or following a start-over click
+    else{
+        //initialize data-location value of each item
+        var items = $('.item img');
+        items.attr("data-location","house"); 
+        //set flag indicating a start-over button click to 'no'
+        localStorage.setItem('check', 'no');
+    }
+    //to be used in main function
+    return [totalWeight, totalValue];
+};
+
+//updates the local storage of all the html on the page that may be changed
+function updateLocalStorage() {
+    var sack = $('#sack').html();
+    localStorage.setItem('sack', sack);
+    var house = $('#house').html();
+    localStorage.setItem('house', house);
+    var weight = $('#weight').html();
+    localStorage.setItem('weight', weight);
+    var value = $('#value').html();
+    localStorage.setItem('value', value);
+    var chart = $('#chart').html();
+    localStorage.setItem('chart', chart);
+};
+
 //if in "house" itemBox (left), move to "sack" itemBox (right) and vice versa
 function moveItem(item) { 
     if (item.attr("data-location") == "house") {
@@ -39,8 +99,7 @@ function tastefulAlert() {
 //d3 pie chart of knapsack contents (how much room left/how much already filled)
 function updatePieChart(totalWeight){
     //used to fill in pie chart
-    var maxWeight = parseInt($('.knapsack').attr("data-maxweight"));
-    var dataset = [totalWeight, maxWeight- totalWeight];
+    var dataset = [totalWeight, 20- totalWeight];
     var labels = [' kg used', ' kg available'];
 
     var pie = d3.layout.pie();
@@ -48,8 +107,8 @@ function updatePieChart(totalWeight){
                         .range(["red", "gray"]);
     
     //set pie chart dimensions
-    var width = 300;
-    var height = 300;
+    var width = 347;
+    var height = 347;
     var outerRadius = width / 2;
     var innerRadius = 0;
     var arc = d3.svg.arc()
@@ -87,81 +146,28 @@ function updatePieChart(totalWeight){
         //make sure text label isn't hidden (just omit label if pie slice to be covered too small)
         .text(function(d, i) {
             if ((d.value > 2) || (d.value == 0)) {
-                return d.value + labels[i];
-            } else {
-                return d.value;
-            };
+            return d.value + labels[i];}
+            else {return d.value};
     });
 };
 
-//load items of item type user has chosen to steal from flickr
-function loadItems(item) {
-
-  var url = "http://api.flickr.com/services/feeds/photos_public.gne?jsoncallback=?";
-  var data = {
-    tags: item,
-    tagmode: "any",
-    format: "json"
-  };
-  var promise = $.ajax({
-    dataType: "json",
-    url: url,
-    data: data
-  });
-    
-  promise.done(function(data) {
-      var weights=["10", "9", "4", "2", "1", "20"];
-      var values=["175", "90", "20", "50", "10", "200"];
-      for (var i = 0; i < 6; i++) {
-      var imgLink = data.items[i].media.m;
-      //appended images to already existing divs 
-      var newImg = $('<img src="' + imgLink + '" data-value= "' + values[i] + '" data-weight= "' + weights[i] +'" />');
-      var id = i + 1;
-      $('#'+id).append(newImg);
-      $('#'+id).append("<br> $" + values[i] + ", " + weights[i] + "kg");
-      }
-  });
-    
-  promise.fail(function(reason) {
-    console.log(reason);
-  });
-
-};
- 
-
-
 //happens after web page is loaded
 $(function() {
-    
-    var chosenItem = prompt("Please enter what you would like to steal: ","default");
-
-    if (chosenItem != null)
-      {
-      loadItems(chosenItem);
-      }
-    
-    //wait for images to load from flickr
-    setTimeout(function(){
+    //set up page and get totalWeight and totalValue 
+    var dataArray = pageInitialization();
+    var totalWeight = dataArray[0];
+    var totalValue = dataArray[1];  
     //burglar on creaky floor noise loops every duration of mp3 file (approx 95 seconds)
     //from https://www.youtube.com/watch?v=XBSsaK-r9nU
     var backgroundNoise = new Audio('FloorCreak.mp3');
     backgroundNoise.play();
-    setInterval(function(){var backgroundNoise = new Audio('FloorCreak.mp3'); backgroundNoise.play();}, 94000);
-
-    var totalValue = 0;
-    var totalWeight = 0;
-    var items = $('.item img');
-    //initialize values
-    items.attr("data-location","house");
-    var sack = $('#sack').html();
-    localStorage.setItem('sack', sack);
-    var house = $('#house').html();
-    localStorage.setItem('house', house);
+    setInterval(function(){var backgroundNoise = new Audio('FloorCreak.mp3'); backgroundNoise.play();}, 94000);  
     
-    //controls movement of the items
+    //controls movement of the items when user clicks each item
+    var items = $('.item img');
     items.on('click', function(event) {
         var target = $(event.target);
-        var weight = parseInt(target.attr('data-weight'))
+        var weight = parseInt(target.attr('data-weight'))       
         //can always move item if it's in the "sack" (right) itemBox
         if (target.attr('data-location') == "sack")
         {
@@ -171,8 +177,7 @@ $(function() {
             updatePieChart(totalWeight);
             $('#weight').html(totalWeight);
             $('#value').html(totalValue);
-        }
-        
+        } 
         //must check if can add weight from "house" (left) itemBox to "sack" itemBox
         else if (canAddToTotal(weight, totalWeight)) 
         {
@@ -185,18 +190,20 @@ $(function() {
         }
         else{
             tastefulAlert();
-        }            
+        }   
+        //update local storage of all changeable html
+        updateLocalStorage();
+        });
+    
+      //when user clicks start-over button
+      var button = $('#startOver');
+      button.on('click', function(event) {
+          var target = $(event.target);
+          //set flag indicating start-over
+          localStorage.setItem('check', 'yes');
+          //reload the page
+          location.reload();
+      });
+    
     });
-    }, 3000);
-});
 
-
-    
-    /* THINGS I NEED TO DO IN ORDER OF PRIORITY
-    
-    LOCALSTORAGE() SAVE INTERACTION STATE-- ask wednesday (hard to do with constant prompt unless counter)
-    PIE CHART TRANSITIONS-- ask Philip wednesday
-    
-    DETAILS FROM CODE REVIEW DOCS
-    MORE COMPLICATED ANIMATION
-    */
