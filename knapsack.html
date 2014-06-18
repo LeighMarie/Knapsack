@@ -3,6 +3,7 @@
         <title> Knapsack Problem</title>
         <link rel="stylesheet" type="text/css" href="knapsack.css">
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+        <script src="http://d3js.org/d3.v3.min.js"></script>
         <script src="knapsack.js"></script>
         <style type="text/css"></style>
     </head>
@@ -13,12 +14,12 @@
         <div class = "itemBox">
             <div class = "header"> <img src="house.png"> </div>
             <div class = "items" id = "house">
-              <div class = "item"> <img src="clock.png" data-value="175" data-weight="10" data-name="clock"> <br> $175, 10kg </div>
-              <div class = "item"> <img src="painting.png" data-value="90" data-weight="9" data-name="painting"> <br> $90, 9kg </div>
-              <div class = "item"> <img src="radio.png" data-value="20" data-weight="4" data-name="radio"> <br> $20, 4kg </div>
-              <div class = "item"> <img src="vase.png" data-value="50" data-weight="2" data-name="vase"> <br> $50, 2kg </div>
-              <div class = "item"> <img src="book.png" data-value="10" data-weight="1" data-name="book"> <br> $10, 1kg </div>
-              <div class = "item"> <img src="computer.png" data-value="200" data-weight="20" data-name="computer"> <br> $200, 20kg </div>
+              <div class = "item" id="1"> </div>
+              <div class = "item" id="2"> </div>
+              <div class = "item" id ="3"> </div>
+              <div class = "item" id ="4"> </div>
+              <div class = "item" id ="5"> </div>
+              <div class = "item" id ="6"> </div>
             </div>
             <div class="footer">Click item to move to knapsack</div>
         </div>
@@ -29,7 +30,12 @@
             </div>
             <div class = "items" id="sack"> </div>
             <div class="footer">Click item to move to house</div>
-        </div>     
-    </div>
+        </div>  
+        <div class="itemBox">
+        <div class = "header" id="textOnly"> How much of your sack is full?  </div>
+        <div class = "items" id = "chart"></div>
+        <div class="footer">Pie Chart Display</div>
+         </div>
+        </div> 
     </body>
 </html>

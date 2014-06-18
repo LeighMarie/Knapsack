@@ -3,9 +3,14 @@
     font-size: 17pt;
 }
 
+
 .knapsack .header img{
     vertical-align: middle;
     height: 150px;
+}
+
+#textOnly{
+    padding-bottom: 50px;
 }
 
 .knapsack .alert{
@@ -41,12 +46,17 @@
 }
 
 .knapsack .item img{
-     width: 100px;
+     width: 80px;
+     margin: 10px;
 }
 
 
 .knapsack .footer{
     text-align: center;
+}
+
+.knapsack{
+    width: 1500px; 
 }
 
 

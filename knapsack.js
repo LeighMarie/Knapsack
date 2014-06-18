@@ -4,33 +4,102 @@
 function moveItem(item) { 
     if (item.attr("data-location") == "house") {
         item.attr("data-location","sack");
-        $('#sack').append(item.parent());
+        //display item in new itemBox with animation
+        var new_item = $(item.parent()).hide();
+        $('#sack').append(new_item);
+        new_item.show("slow");
     }
     else{
         item.attr("data-location","house");
-        $('#house').append(item.parent());
+        //display item in new itemBox with animation
+        var new_item = $(item.parent()).hide();
+        $('#house').append(new_item);
+        new_item.show("slow");
     }
 };
- /*$elem.animate({
-        'left': endpoint +'px'
-    });*/
+
 
 //check whether totalWeight is still under 20 after new item possibly moved
 function canAddToTotal(weight, totalWeight) {
     return (totalWeight + weight <=  parseInt($('.knapsack').attr("data-maxweight")));   
 };
 
+
+//a tasteful alert alerting the user that they have exceeded the knapsack capacity
 function tastefulAlert() {
+    //classic failure noise
+    //from http://www.youtube.com/watch?v=iMpXAknykeg
+    var audio = new Audio('SadTrombone.mp3');
+    audio.play();
     $('.alert').animate({opacity: 1}, 1500);
     $('.alert').animate({opacity: 0}, 1500);
 };
 
 
-/*function loadEnemies(enemyName) {
+//d3 pie chart of knapsack contents (how much room left/how much already filled)
+function updatePieChart(totalWeight){
+    //used to fill in pie chart
+    var maxWeight = parseInt($('.knapsack').attr("data-maxweight"));
+    var dataset = [totalWeight, maxWeight- totalWeight];
+    var labels = [' kg used', ' kg available'];
+
+    var pie = d3.layout.pie();
+    var color = d3.scale.ordinal()
+                        .range(["red", "gray"]);
+    
+    //set pie chart dimensions
+    var width = 300;
+    var height = 300;
+    var outerRadius = width / 2;
+    var innerRadius = 0;
+    var arc = d3.svg.arc()
+                    .innerRadius(innerRadius)
+                    .outerRadius(outerRadius);
+    
+    //update the chart from last move of user
+    $("#chart").html("");
+    var svg = d3.select('#chart')
+                .append("svg")
+                .attr("width", width)
+                .attr("height", height);
+    
+    //set up groups
+    var arcs = svg.selectAll("g.arc")
+            .data(pie(dataset))
+            .enter()
+            .append("g")
+            .attr("class", "arc")
+            .attr("transform", "translate(" + outerRadius + ", " + outerRadius + ")");
+    
+    //Draw arc paths
+    arcs.append("path")
+        .attr("fill", function(d, i) {
+            return color(i);
+        })
+        .attr("d", arc);
+    
+    //generate text labels for each wedge
+    arcs.append("text")
+        .attr("transform", function(d) {
+            return "translate(" + arc.centroid(d) + ")";
+        })
+        .attr("text-anchor", "middle")
+        //make sure text label isn't hidden (just omit label if pie slice to be covered too small)
+        .text(function(d, i) {
+            if ((d.value > 2) || (d.value == 0)) {
+                return d.value + labels[i];
+            } else {
+                return d.value;
+            };
+    });
+};
+
+//load items of item type user has chosen to steal from flickr
+function loadItems(item) {
 
   var url = "http://api.flickr.com/services/feeds/photos_public.gne?jsoncallback=?";
   var data = {
-    tags: enemyName,
+    tags: item,
     tagmode: "any",
     format: "json"
   };
@@ -39,41 +108,55 @@ function tastefulAlert() {
     url: url,
     data: data
   });
-  $('img.enemy').remove();
+    
   promise.done(function(data) {
-      var imgLink = data.items[0].media.m;
-      var newImg = $('<img class="enemy" src="' + imgLink + '" />');
-      $('body').append(newImg);
+      var weights=["10", "9", "4", "2", "1", "20"];
+      var values=["175", "90", "20", "50", "10", "200"];
+      for (var i = 0; i < 6; i++) {
+      var imgLink = data.items[i].media.m;
+      //appended images to already existing divs 
+      var newImg = $('<img src="' + imgLink + '" data-value= "' + values[i] + '" data-weight= "' + weights[i] +'" />');
+      var id = i + 1;
+      $('#'+id).append(newImg);
+      $('#'+id).append("<br> $" + values[i] + ", " + weights[i] + "kg");
+      }
   });
+    
   promise.fail(function(reason) {
     console.log(reason);
   });
 
 };
-
-//if spaceship and enemy get close enough, spaceship destroys enemy and a laser sound is played
-function checkCollision($elem) {
-    var enemyChosen = $('.enemy');
-    //if both entities are not null
-    if ((enemyChosen) && ($elem)) {
-        if ((Math.abs($elem.position().left - enemyChosen.position().left) < 75) &&
-        (Math.abs($elem.position().top - enemyChosen.position().top) < 75)) {
-            var audio = new Audio('laser1.mp3');
-            audio.play();
-            enemyChosen.remove();
-        }
-        else{}
-    }
-    };*/ 
+ 
 
 
 //happens after web page is loaded
 $(function() {
+    
+    var chosenItem = prompt("Please enter what you would like to steal: ","default");
+
+    if (chosenItem != null)
+      {
+      loadItems(chosenItem);
+      }
+    
+    //wait for images to load from flickr
+    setTimeout(function(){
+    //burglar on creaky floor noise loops every duration of mp3 file (approx 95 seconds)
+    //from https://www.youtube.com/watch?v=XBSsaK-r9nU
+    var backgroundNoise = new Audio('FloorCreak.mp3');
+    backgroundNoise.play();
+    setInterval(function(){var backgroundNoise = new Audio('FloorCreak.mp3'); backgroundNoise.play();}, 94000);
+
     var totalValue = 0;
     var totalWeight = 0;
     var items = $('.item img');
     //initialize values
     items.attr("data-location","house");
+    var sack = $('#sack').html();
+    localStorage.setItem('sack', sack);
+    var house = $('#house').html();
+    localStorage.setItem('house', house);
     
     //controls movement of the items
     items.on('click', function(event) {
@@ -85,14 +168,18 @@ $(function() {
             moveItem(target);
             totalWeight -= weight;
             totalValue -= parseInt(target.attr("data-value"));
+            updatePieChart(totalWeight);
             $('#weight').html(totalWeight);
             $('#value').html(totalValue);
         }
+        
         //must check if can add weight from "house" (left) itemBox to "sack" itemBox
-        else if (canAddToTotal(weight, totalWeight)) {
+        else if (canAddToTotal(weight, totalWeight)) 
+        {
             moveItem(target);
             totalWeight += weight;
             totalValue += parseInt(target.attr("data-value"));
+            updatePieChart(totalWeight);
             $('#weight').html(totalWeight);
             $('#value').html(totalValue);
         }
@@ -100,33 +187,16 @@ $(function() {
             tastefulAlert();
         }            
     });
-
+    }, 3000);
 });
 
-  /*//text box to enter enemy's name
-  var input = $('<input> CHOOSE AN ENEMY </input>');
-  $("#controls").append(input);*/
 
-  /*//check if user has entered enemy name to fetch picture
-  input.on('keyup', function(evt) {
-    if (evt.keyCode == 13) {
-      var enemyName = input.val();
-      loadEnemies(enemyName);
-    }
-  });
-  */
-  /*//check whether spaceship and enemy are close together
-  setInterval(function(){checkCollision(spaceship)}, 300);*/
     
     /* THINGS I NEED TO DO IN ORDER OF PRIORITY
-    TASTEFUL ALERT
-    MOVE TOTAL VALUE/TOTAL WEIGHT UP
     
-    ALLOW FOR USER TO PICK IMAGES
-    ADD SOUND
-    D3 BAR/PIE CHART
+    LOCALSTORAGE() SAVE INTERACTION STATE-- ask wednesday (hard to do with constant prompt unless counter)
+    PIE CHART TRANSITIONS-- ask Philip wednesday
     
-    LOCALSTORAGE() SAVE INTERACTION STATE
-    ANIMATE THE APPEND 
     DETAILS FROM CODE REVIEW DOCS
+    MORE COMPLICATED ANIMATION
     */
