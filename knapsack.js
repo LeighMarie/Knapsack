@@ -6,41 +6,41 @@ function pageInitialization(){
     var totalWeight = 0;
     var totalValue = 0;
     //if not the first time opening page or not following a start-over click
-    if (localStorage.getItem('check') != 'yes') {   
-        //check if local storage should be restored for each DOM and make sure DOM's properties are correct
-        if(localStorage.getItem('sack')) {
-            $('#sack').html(localStorage.getItem('sack'));
-            $('.item').attr("style","");
-            $('.item').css("display", "inline-block");       
+    if (localStorage.getItem('ifStorage') == 'yes') {   
+        //check if local storage should be restored for each DOM and make sure DOM's properties are correct      
+        var sackData = localStorage.getItem('sack');
+        var houseData = localStorage.getItem('house');
+        var chartData = localStorage.getItem('chart');
+        if (sackData) {
+            $('#sack').html(sackData);
+            $('.item').attr("style","")
+                      .css("display", "inline-block");   
+            //calculate total weight and total value of objects in sack to restore display
+            $.each($('.item img'), function() { 
+                if ($(this).attr("data-location") == "sack") {
+                    totalWeight += parseInt($(this).attr("data-weight"));
+                    totalValue += parseInt($(this).attr("data-value")); 
+                }
+             });
         }
-
-        if(localStorage.getItem('house')) {
-            $('#house').html(localStorage.getItem('house'));
-            $('.item').attr("style","");
-            $('.item').css("display", "inline-block");   
-        }
-
-        if(localStorage.getItem('weight')) {
-            $('#weight').html(localStorage.getItem('weight'));
-            totalWeight = parseInt(localStorage.getItem('weight'));
-        }
-
-        if(localStorage.getItem('value')) {
-            $('#value').html(localStorage.getItem('value'));
-            totalValue= parseInt(localStorage.getItem('value'));
-        }
-        
-        if(localStorage.getItem('chart')) {
-            $('#chart').html(localStorage.getItem('chart'));
+        if (houseData) {
+            $('#house').html(houseData);
+            $('.item').attr("style","")
+                      .css("display", "inline-block");   
         } 
+        if (chartData) {
+            $('#chart').html(chartData);
+        } 
+        $('#weight').html(totalWeight);
+        $('#value').html(totalValue);
     }
     //first time loading page or following a start-over click
-    else{
+    else {
         //initialize data-location value of each item
         var items = $('.item img');
         items.attr("data-location","house"); 
         //set flag indicating a start-over button click to 'no'
-        localStorage.setItem('check', 'no');
+        localStorage.setItem('ifStorage', 'yes');
     }
     //to be used in main function
     return [totalWeight, totalValue];
@@ -48,16 +48,14 @@ function pageInitialization(){
 
 //updates the local storage of all the html on the page that may be changed
 function updateLocalStorage() {
-    var sack = $('#sack').html();
-    localStorage.setItem('sack', sack);
-    var house = $('#house').html();
-    localStorage.setItem('house', house);
-    var weight = $('#weight').html();
-    localStorage.setItem('weight', weight);
-    var value = $('#value').html();
-    localStorage.setItem('value', value);
-    var chart = $('#chart').html();
-    localStorage.setItem('chart', chart);
+    function saveElement(object) {
+        //save the object id's html
+        var objectHTML = $('#'+object).html();
+        localStorage.setItem(object, objectHTML);
+    };
+    saveElement("sack");
+    saveElement("house");
+    saveElement("chart");
 };
 
 //if in "house" itemBox (left), move to "sack" itemBox (right) and vice versa
@@ -201,7 +199,7 @@ $(function() {
       button.on('click', function(event) {
           var target = $(event.target);
           //set flag indicating start-over
-          localStorage.setItem('check', 'yes');
+          localStorage.setItem('ifStorage', 'no');
           //reload the page
           location.reload();
       });
